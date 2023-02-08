@@ -130,7 +130,7 @@ const albums = async function (req, res) {
   // Note that in this case you will need to return multiple albums, so you will need to return an array of objects
   connection.query(
     `
-    SELECT *
+    SELECT album_id, title, release_date, thumbnail_url
     FROM Albums
     ORDER BY release_date DESC
   `,
@@ -139,12 +139,10 @@ const albums = async function (req, res) {
         console.log(err);
         res.json({});
       } else {
-        data = data.slice(1);
         res.json(data);
       }
     }
   );
-  // res.json([]); // replace this with your implementation
 };
 
 // Route 6: GET /album_songs/:album_id
