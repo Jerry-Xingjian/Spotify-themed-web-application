@@ -278,45 +278,97 @@ const search_songs = async function (req, res) {
   const energy_high = req.query.energy_high == null ? 1.0 : req.query.energy_high;
   const valence_low = req.query.valence_low ?? 0.0;
   const valence_high = req.query.valence_high ?? 1.0;
-  const explicit = req.query.explicit === "true" ? 1 : 0;
+  const explicit = req.query.explicit ?? '';
+  console.log("Current explicit value: " + explicit);
 
   if (title == "") {
-    connection.query(
-      `
-    SELECT *
-    FROM Songs
-    WHERE duration >= ${durationLow} AND duration <= ${durationHigh} AND plays >= ${plays_low} AND plays <= ${plays_high} AND danceability >= ${danceability_low} AND danceability <= ${danceability_high} AND energy >= ${energy_low} AND energy <= ${energy_high} AND valence >= ${valence_low} AND valence <= ${valence_high} AND explicit = ${0}
-    ORDER BY title
-  `,
-      (err, data) => {
-        if (err || data.length === 0) {
-          console.log(err);
-          res.json({});
-        } else {
-          res.json(data);
-        }
-      }
-    );
+    if (explicit == 'false' || explicit == '') {
+      console.log("this is the value explicit: " + explicit);
+      console.log("title is undefined, and explicit is undefined");
+      query = `
+        SELECT *
+        FROM Songs
+        WHERE duration >= ${durationLow} AND duration <= ${durationHigh} AND plays >= ${plays_low} AND plays <= ${plays_high} AND danceability >= ${danceability_low} AND danceability <= ${danceability_high} AND energy >= ${req.query.energy_low == null ? 0 : req.query.energy_low} AND energy <= ${req.query.energy_high == null ? 1: req.query.energy_high} AND valence >= ${valence_low} AND valence <= ${valence_high} AND explicit = ${0}
+        ORDER BY title
+      `;
+    } else {
+      console.log("title is undefined, but explicit is defined");
+      console.log("THIS IS EXPLICIT: " + explicit);
+      query = `
+        SELECT *
+        FROM Songs
+        WHERE duration >= ${durationLow} AND duration <= ${durationHigh} AND plays >= ${plays_low} AND plays <= ${plays_high} AND danceability >= ${danceability_low} AND danceability <= ${danceability_high} AND energy >= ${req.query.energy_low == null ? 0 : req.query.energy_low} AND energy <= ${req.query.energy_high == null ? 1: req.query.energy_high} AND valence >= ${valence_low} AND valence <= ${valence_high}
+        ORDER BY title
+      `;
+    }
   } else {
-    // weird energy_low value
-    // has to pass req.query.energy_low instead of energy_low directly to the query
-    connection.query(
-      `
-    SELECT *
-    FROM Songs
-    WHERE duration >= ${durationLow} AND duration <= ${durationHigh} AND plays >= ${plays_low} AND plays <= ${plays_high} AND danceability >= ${danceability_low} AND danceability <= ${danceability_high} AND energy >= ${req.query.energy_low == null ? 0 : req.query.energy_low} AND energy <= ${req.query.energy_high == null ? 1: req.query.energy_high} AND valence >= ${valence_low} AND valence <= ${valence_high} AND explicit <= ${explicit} AND title LIKE '%${title}%' 
-    ORDER BY title
-  `,
-      (err, data) => {
-        if (err || data.length === 0) {
-          console.log(err);
-          res.json({});
-        } else {
-          res.json(data);
-        }
-      }
-    );
+    if (explicit == 'false' || explicit == '') {
+      console.log("title is defined, and explicit is undefined");
+      query = `
+        SELECT *
+        FROM Songs
+        WHERE duration >= ${durationLow} AND duration <= ${durationHigh} AND plays >= ${plays_low} AND plays <= ${plays_high} AND danceability >= ${danceability_low} AND danceability <= ${danceability_high} AND energy >= ${req.query.energy_low == null ? 0 : req.query.energy_low} AND energy <= ${req.query.energy_high == null ? 1: req.query.energy_high} AND valence >= ${valence_low} AND valence <= ${valence_high} AND explicit <= ${explicit} AND title LIKE '%${title}%'
+        ORDER BY title 
+      `;
+    } else{
+      console.log("title is undefined, but explicit is defined");
+      query = `
+        SELECT *
+        FROM Songs
+        WHERE duration >= ${durationLow} AND duration <= ${durationHigh} AND plays >= ${plays_low} AND plays <= ${plays_high} AND danceability >= ${danceability_low} AND danceability <= ${danceability_high} AND energy >= ${req.query.energy_low == null ? 0 : req.query.energy_low} AND energy <= ${req.query.energy_high == null ? 1: req.query.energy_high} AND valence >= ${valence_low} AND valence <= ${valence_high} AND explicit <= ${explicit} AND title LIKE '%${title}%'
+        ORDER BY title
+      `;
+    }
   }
+
+  connection.query(query,
+    (err, data) => {
+      if (err || data.length === 0) {
+        console.log(err);
+        res.json({});
+      } else {
+        res.json(data);
+      }
+    }
+  );  
+
+  // if (title == "") {
+  //   connection.query(
+  //     `
+  //   SELECT *
+  //   FROM Songs
+  //   WHERE duration >= ${durationLow} AND duration <= ${durationHigh} AND plays >= ${plays_low} AND plays <= ${plays_high} AND danceability >= ${danceability_low} AND danceability <= ${danceability_high} AND energy >= ${energy_low} AND energy <= ${energy_high} AND valence >= ${valence_low} AND valence <= ${valence_high} AND explicit = ${0}
+  //   ORDER BY title
+  // `,
+  //     (err, data) => {
+  //       if (err || data.length === 0) {
+  //         console.log(err);
+  //         res.json({});
+  //       } else {
+  //         res.json(data);
+  //       }
+  //     }
+  //   );
+  // } else {
+  //   // weird energy_low value
+  //   // has to pass req.query.energy_low instead of energy_low directly to the query
+  //   connection.query(
+  //     `
+  //   SELECT *
+  //   FROM Songs
+  //   WHERE duration >= ${durationLow} AND duration <= ${durationHigh} AND plays >= ${plays_low} AND plays <= ${plays_high} AND danceability >= ${danceability_low} AND danceability <= ${danceability_high} AND energy >= ${req.query.energy_low == null ? 0 : req.query.energy_low} AND energy <= ${req.query.energy_high == null ? 1: req.query.energy_high} AND valence >= ${valence_low} AND valence <= ${valence_high} AND explicit <= ${explicit} AND title LIKE '%${title}%' 
+  //   ORDER BY title
+  // `,
+  //     (err, data) => {
+  //       if (err || data.length === 0) {
+  //         console.log(err);
+  //         res.json({});
+  //       } else {
+  //         res.json(data);
+  //       }
+  //     }
+  //   );
+  // }
 };
 
 module.exports = {

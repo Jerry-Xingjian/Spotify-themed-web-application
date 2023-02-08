@@ -10,6 +10,7 @@ export default function HomePage() {
   // We use the setState hook to persist information across renders (such as the result of our API calls)
   const [songOfTheDay, setSongOfTheDay] = useState({});
   // TODO (TASK 13): add a state variable to store the app author (default to '')
+  const [appAuthor, setAppAuthor] = useState('');
 
   const [selectedSongId, setSelectedSongId] = useState(null);
 
@@ -27,6 +28,9 @@ export default function HomePage() {
       .then(resJson => setSongOfTheDay(resJson));
 
     // TODO (TASK 14): add a fetch call to get the app author (name not pennkey) and store it in the state variable
+    fetch(`http://${config.server_host}:${config.server_port}/author/name`)
+      .then(res => res.text())
+      .then(resJson => setAppAuthor(resJson));
   }, []);
 
   // Here, we define the columns of the "Top Songs" table. The songColumns variable is an array (in order)
@@ -53,7 +57,15 @@ export default function HomePage() {
   // TODO (TASK 15): define the columns for the top albums (schema is Album Title, Plays), where Album Title is a link to the album page
   // Hint: this should be very similar to songColumns defined above, but has 2 columns instead of 3
   const albumColumns = [
-
+    {
+      field: 'title',
+      headerName: 'Album Title',
+      renderCell: (row) => <NavLink to={`/albums/${row.album_id}`}>{row.title}</NavLink>
+    },
+    {
+      field: 'plays',
+      headerName: 'Plays'
+    }
   ]
 
   return (
@@ -69,6 +81,11 @@ export default function HomePage() {
       <Divider />
       {/* TODO (TASK 16): add a h2 heading, LazyTable, and divider for top albums. Set the LazyTable's props for defaultPageSize to 5 and rowsPerPageOptions to [5, 10] */}
       {/* TODO (TASK 17): add a paragraph (<p>text</p>) that displays the value of your author state variable from TASK 13 */}
+      <Divider /> 
+      <h2>Top Albums</h2>
+      <LazyTable route={`http://${config.server_host}:${config.server_port}/top_albums`} columns={albumColumns} defaultPageSize={5} rowsPerPageOptions={[5, 10]}/>
+      <Divider />
+      <p>{appAuthor}</p>
     </Container>
   );
 };
